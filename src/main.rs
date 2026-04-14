@@ -10,6 +10,38 @@ pub struct Vocab {
     pub translation: String,
 }
 
+#[derive(Default)]
+struct Content {
+    text: String,
+}
+
+impl eframe::App for Content {
+    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        let path = "lingo.db";
+        let conn = Connection::open(path).unwrap();
+        egui::CentralPanel::default().show_inside(ui, |ui| {
+            if ui.button("Pass").clicked() {
+                let v = get_vocab(&conn, 1).unwrap();
+                println!("{} {} {} {}", v.id, v.vocab, v.reading, v.translation);
+            }
+            if ui.button("Fail").clicked() {
+                self.text = "fail".to_owned();
+            }
+            if ui.button("Flip").clicked() {
+                println!("flip");
+            }
+
+            egui::ScrollArea::vertical()
+                .auto_shrink(false)
+                .stick_to_bottom(true)
+                .show(ui, |ui| {
+                    ui.label(&self.text);
+                });
+
+        });
+    }
+}
+
 pub fn get_vocab(conn: &Connection, id: i64) -> Result<Vocab> {
 
     let mut stmt = conn.prepare(
@@ -30,27 +62,10 @@ pub fn get_vocab(conn: &Connection, id: i64) -> Result<Vocab> {
 
 fn main() -> Result<(), eframe::Error> {
     env_logger::init(); // Log to stderr (if you run with `RUST_LOG=debug`).
-    let path = "/Users/mburr/Downloads/vocab.db";
-    let conn = Connection::open(path).unwrap();
-
-    let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_inner_size([320.0, 240.0]),
-        ..Default::default()
-    };
-
-    eframe::run_ui_native("lingo", options, move |ctx, _frame| {
-        egui::CentralPanel::default().show_inside(ctx, |ui| {
-            ui.heading("-");
-            if ui.button("Pass").clicked() {
-                let v = get_vocab(&conn, 1).unwrap();
-                println!("{} {} {} {}", v.id, v.vocab, v.reading, v.translation);
-            }
-            if ui.button("Fail").clicked() {
-                println!("fail");
-            }
-            if ui.button("Flip").clicked() {
-                println!("flip");
-            }
-        });
-    })
+    let options = eframe::NativeOptions::default();
+    eframe::run_native(
+        "lingo",
+        options,
+        Box::new(|_cc| Ok(Box::<Content>::default())),
+    )
 }
