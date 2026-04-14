@@ -10,8 +10,7 @@ pub struct Vocab {
     pub translation: String,
 }
 
-pub fn get_vocab_by_id(path: &str, id: i64) -> Result<Vocab> {
-    let conn = Connection::open(path)?;
+pub fn get_vocab_by_id(conn: &Connection, id: i64) -> Result<Vocab> {
 
     let mut stmt = conn.prepare(
         "SELECT id, vocab, reading, translation FROM vocab WHERE id = ?1"
@@ -29,18 +28,13 @@ pub fn get_vocab_by_id(path: &str, id: i64) -> Result<Vocab> {
     Ok(v)
 }
 
-/*
-fn main() -> anyhow::Result<()> {
-    let db_path = "vocab.db";
-    // /Users/mburr/Downloads/vocab.db
-    let v = db::get_vocab_by_id(db_path, 1)?;
-    println!("{} {} {} {}", v.id, v.vocab, v.reading, v.translation);
-    Ok(())
-}
-*/
-
 fn main() -> Result<(), eframe::Error> {
     env_logger::init(); // Log to stderr (if you run with `RUST_LOG=debug`).
+    let path = "/Users/mburr/Downloads/vocab.db";
+    let conn = Connection::open(path).unwrap();
+
+    let v = get_vocab_by_id(&conn, 1).unwrap();
+    println!("{} {} {} {}", v.id, v.vocab, v.reading, v.translation);
 
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default().with_inner_size([320.0, 240.0]),
