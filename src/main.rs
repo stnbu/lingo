@@ -10,7 +10,7 @@ pub struct Vocab {
     pub translation: String,
 }
 
-pub fn get_vocab_by_id(conn: &Connection, id: i64) -> Result<Vocab> {
+pub fn get_vocab(conn: &Connection, id: i64) -> Result<Vocab> {
 
     let mut stmt = conn.prepare(
         "SELECT id, vocab, reading, translation FROM vocab WHERE id = ?1"
@@ -33,19 +33,17 @@ fn main() -> Result<(), eframe::Error> {
     let path = "/Users/mburr/Downloads/vocab.db";
     let conn = Connection::open(path).unwrap();
 
-    let v = get_vocab_by_id(&conn, 1).unwrap();
-    println!("{} {} {} {}", v.id, v.vocab, v.reading, v.translation);
-
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default().with_inner_size([320.0, 240.0]),
         ..Default::default()
     };
 
-    eframe::run_ui_native("My egui App", options, move |ctx, _frame| {
+    eframe::run_ui_native("lingo", options, move |ctx, _frame| {
         egui::CentralPanel::default().show_inside(ctx, |ui| {
-            ui.heading("My egui Application");
+            ui.heading("-");
             if ui.button("Pass").clicked() {
-                println!("pass");
+                let v = get_vocab(&conn, 1).unwrap();
+                println!("{} {} {} {}", v.id, v.vocab, v.reading, v.translation);
             }
             if ui.button("Fail").clicked() {
                 println!("fail");
