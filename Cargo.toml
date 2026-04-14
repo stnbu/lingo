@@ -1,8 +1,6 @@
 [package]
-name = "hello_world_simple"
+name = "lingo"
 version = "0.1.0"
-authors = ["Emil Ernerfeldt <emil.ernerfeldt@gmail.com>"]
-license = "MIT OR Apache-2.0"
 edition = "2021"
 rust-version = "1.72"
 publish = false

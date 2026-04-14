@@ -1391,14 +1391,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 
 [[package]]
-name = "hello_world_simple"
-version = "0.1.0"
-dependencies = [
- "eframe",
- "env_logger",
-]
-
-[[package]]
 name = "hermit-abi"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1727,6 +1719,14 @@ name = "linebender_resource_handle"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d4a5ff6bcca6c4867b1c4fd4ef63e4db7436ef363e0ad7531d1558856bae64f4"
+
+[[package]]
+name = "lingo"
+version = "0.1.0"
+dependencies = [
+ "eframe",
+ "env_logger",
+]
 
 [[package]]
 name = "linux-raw-sys"
