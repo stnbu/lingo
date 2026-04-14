@@ -14,8 +14,8 @@ fn main() -> Result<(), eframe::Error> {
     let mut name = "Arthur".to_owned();
     let mut age = 42;
 
-    eframe::run_simple_native("My egui App", options, move |ctx, _frame| {
-        egui::CentralPanel::default().show(ctx, |ui| {
+    eframe::run_ui_native("My egui App", options, move |ctx, _frame| {
+        egui::CentralPanel::default().show_inside(ctx, |ui| {
             ui.heading("My egui Application");
             ui.horizontal(|ui| {
                 let name_label = ui.label("Your name: ");
