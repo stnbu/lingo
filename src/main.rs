@@ -22,7 +22,7 @@ impl eframe::App for Content {
         egui::CentralPanel::default().show_inside(ui, |ui| {
             if ui.button("Pass").clicked() {
                 let v = get_vocab(&conn, 1).unwrap();
-                println!("{} {} {} {}", v.id, v.vocab, v.reading, v.translation);
+                self.text = format!("{} {} {} {}", v.id, v.vocab, v.reading, v.translation);
             }
             if ui.button("Fail").clicked() {
                 self.text = "fail".to_owned();
