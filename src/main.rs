@@ -59,7 +59,9 @@ impl Default for LingoApp {
 impl LingoApp {
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
         load_fonts(&cc.egui_ctx);
-        Self::default()
+        let mut s = Self::default();
+        s.get_vocab();
+        s
     }
 
     fn flip(&mut self) {
@@ -82,7 +84,8 @@ impl LingoApp {
             })
             .unwrap();
         self.front = v.vocab;
-        self.back = format!("{}\n{}", v.reading, v.translation)
+        self.back = format!("{}\n{}", v.reading, v.translation);
+        self.is_front = true;
     }
 }
 
