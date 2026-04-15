@@ -159,12 +159,15 @@ impl eframe::App for LingoApp {
                     .auto_shrink(false)
                     .stick_to_bottom(true)
                     .show(ui, |ui| {
-                    ui.label(egui::RichText::new(if self.is_front {
-                        &self.front
-                    } else {
-                        &self.back
-                    }).size(50.0));
-                });
+                        ui.label(
+                            egui::RichText::new(if self.is_front {
+                                &self.front
+                            } else {
+                                &self.back
+                            })
+                            .size(50.0),
+                        );
+                    });
             });
         egui::Panel::bottom("bottom_panel")
             .resizable(false)
