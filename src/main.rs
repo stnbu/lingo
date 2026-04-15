@@ -67,20 +67,23 @@ impl Content {
     }
 
     fn get_vocab(&mut self) {
-        let mut stmt =
-            self.conn.prepare("SELECT id, vocab, reading, translation FROM vocab WHERE id = ?1").unwrap();
-        let v = stmt.query_row([1], |row| {
-            Ok(Vocab {
-                id: row.get(0).unwrap(),
-                vocab: row.get(1).unwrap(),
-                reading: row.get(2).unwrap(),
-                translation: row.get(3).unwrap(),
+        let mut stmt = self
+            .conn
+            .prepare("SELECT id, vocab, reading, translation FROM vocab WHERE id = ?1")
+            .unwrap();
+        let v = stmt
+            .query_row([1], |row| {
+                Ok(Vocab {
+                    id: row.get(0).unwrap(),
+                    vocab: row.get(1).unwrap(),
+                    reading: row.get(2).unwrap(),
+                    translation: row.get(3).unwrap(),
+                })
             })
-        }).unwrap();
+            .unwrap();
         self.front = v.vocab;
         self.back = format!("{}\n{}", v.reading, v.translation)
     }
-
 }
 
 impl eframe::App for Content {
