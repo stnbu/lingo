@@ -69,12 +69,15 @@ impl eframe::App for Content {
             if ui.button("Pass").clicked() {
                 let v = get_vocab(&self.conn, 1).unwrap();
                 self.front = v.vocab;
+                self.back = format!("{}\n{}", v.reading, v.translation)
             }
             if ui.button("Fail").clicked() {
-                self.front = "fail".to_owned();
+                let v = get_vocab(&self.conn, 1).unwrap();
+                self.front = v.vocab;
+                self.back = format!("{}\n{}", v.reading, v.translation)
             }
             if ui.button("Flip").clicked() {
-                println!("flip");
+                self.is_front = !self.is_front;
             }
             egui::ScrollArea::vertical()
                 .auto_shrink(false)
