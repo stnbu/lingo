@@ -83,12 +83,11 @@ impl eframe::App for Content {
                 .auto_shrink(false)
                 .stick_to_bottom(true)
                 .show(ui, |ui| {
-                    ui.label(
-                        if self.is_front {
-                            &self.front
-                        } else {
-                            &self.back
-                        });
+                    ui.label(if self.is_front {
+                        &self.front
+                    } else {
+                        &self.back
+                    });
                 });
         });
     }
