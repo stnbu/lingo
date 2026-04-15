@@ -65,20 +65,32 @@ impl Content {
     fn flip(&mut self) {
         self.is_front = !self.is_front;
     }
+
+    fn get_vocab(&mut self) {
+        let mut stmt =
+            self.conn.prepare("SELECT id, vocab, reading, translation FROM vocab WHERE id = ?1").unwrap();
+        let v = stmt.query_row([1], |row| {
+            Ok(Vocab {
+                id: row.get(0).unwrap(),
+                vocab: row.get(1).unwrap(),
+                reading: row.get(2).unwrap(),
+                translation: row.get(3).unwrap(),
+            })
+        }).unwrap();
+        self.front = v.vocab;
+        self.back = format!("{}\n{}", v.reading, v.translation)
+    }
+
 }
 
 impl eframe::App for Content {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show_inside(ui, |ui| {
             if ui.button("Pass").clicked() {
-                let v = get_vocab(&self.conn, 1).unwrap();
-                self.front = v.vocab;
-                self.back = format!("{}\n{}", v.reading, v.translation)
+                self.get_vocab();
             }
             if ui.button("Fail").clicked() {
-                let v = get_vocab(&self.conn, 1).unwrap();
-                self.front = v.vocab;
-                self.back = format!("{}\n{}", v.reading, v.translation)
+                self.get_vocab();
             }
             if ui.button("Flip").clicked() {
                 self.flip();
@@ -95,20 +107,6 @@ impl eframe::App for Content {
                 });
         });
     }
-}
-
-pub fn get_vocab(conn: &Connection, id: i64) -> Result<Vocab> {
-    let mut stmt =
-        conn.prepare("SELECT id, vocab, reading, translation FROM vocab WHERE id = ?1")?;
-    let v = stmt.query_row([id], |row| {
-        Ok(Vocab {
-            id: row.get(0)?,
-            vocab: row.get(1)?,
-            reading: row.get(2)?,
-            translation: row.get(3)?,
-        })
-    })?;
-    Ok(v)
 }
 
 fn main() -> Result<(), eframe::Error> {
