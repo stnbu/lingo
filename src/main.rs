@@ -12,11 +12,11 @@ pub struct Vocab {
     pub translation: String,
 }
 
-#[derive(Default)]
 struct Content {
     front: String,
     back: String,
     is_front: bool,
+    conn: Connection,
 }
 
 fn load_fonts(ctx: &egui::Context) {
@@ -44,6 +44,18 @@ fn load_fonts(ctx: &egui::Context) {
     ctx.set_fonts(fonts);
 }
 
+impl Default for Content {
+    fn default() -> Self {
+        let conn = Connection::open("lingo.db").unwrap();
+        Self {
+            front: String::new(),
+            back: String::new(),
+            conn,
+            is_front: true,
+        }
+    }
+}
+
 impl Content {
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
         load_fonts(&cc.egui_ctx);
@@ -53,11 +65,9 @@ impl Content {
 
 impl eframe::App for Content {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
-        let path = "lingo.db";
-        let conn = Connection::open(path).unwrap();
         egui::CentralPanel::default().show_inside(ui, |ui| {
             if ui.button("Pass").clicked() {
-                let v = get_vocab(&conn, 1).unwrap();
+                let v = get_vocab(&self.conn, 1).unwrap();
                 self.front = v.vocab;
             }
             if ui.button("Fail").clicked() {
