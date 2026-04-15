@@ -2,6 +2,8 @@
 
 use eframe::egui;
 use rusqlite::{Connection, Result};
+use egui::{FontData, FontDefinitions, FontFamily};
+use std::sync::Arc;
 
 pub struct Vocab {
     pub id: i64,
@@ -13,6 +15,38 @@ pub struct Vocab {
 #[derive(Default)]
 struct Content {
     text: String,
+}
+
+fn load_fonts(ctx: &egui::Context) {
+    let mut fonts = FontDefinitions::default();
+
+    fonts.font_data.insert(
+        "hiragino".to_owned(),
+        Arc::new(FontData::from_owned(std::fs::read(
+            "/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc"
+        ).unwrap())),
+    );
+
+    fonts
+        .families
+        .entry(FontFamily::Proportional)
+        .or_default()
+        .insert(0, "hiragino".to_owned());
+
+    fonts
+        .families
+        .entry(egui::FontFamily::Monospace)
+        .or_default()
+        .insert(0, "hiragino".to_owned());
+
+    ctx.set_fonts(fonts);
+}
+
+impl Content {
+    fn new(cc: &eframe::CreationContext<'_>) -> Self {
+        load_fonts(&cc.egui_ctx);
+        Self::default()
+    }
 }
 
 impl eframe::App for Content {
@@ -30,7 +64,6 @@ impl eframe::App for Content {
             if ui.button("Flip").clicked() {
                 println!("flip");
             }
-
             egui::ScrollArea::vertical()
                 .auto_shrink(false)
                 .stick_to_bottom(true)
@@ -43,11 +76,9 @@ impl eframe::App for Content {
 }
 
 pub fn get_vocab(conn: &Connection, id: i64) -> Result<Vocab> {
-
     let mut stmt = conn.prepare(
         "SELECT id, vocab, reading, translation FROM vocab WHERE id = ?1"
     )?;
-
     let v = stmt.query_row([id], |row| {
         Ok(Vocab {
             id: row.get(0)?,
@@ -56,7 +87,6 @@ pub fn get_vocab(conn: &Connection, id: i64) -> Result<Vocab> {
             translation: row.get(3)?,
         })
     })?;
-
     Ok(v)
 }
 
@@ -66,6 +96,6 @@ fn main() -> Result<(), eframe::Error> {
     eframe::run_native(
         "lingo",
         options,
-        Box::new(|_cc| Ok(Box::<Content>::default())),
+        Box::new(|cc| Ok(Box::new(Content::new(cc)))),
     )
 }
