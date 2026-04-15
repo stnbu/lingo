@@ -151,31 +151,39 @@ impl LingoApp {
 
 impl eframe::App for LingoApp {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
-        egui::CentralPanel::default().show_inside(ui, |ui| {
-            if ui.button("Pass").clicked() {
-                self.write_result(self.id, true).unwrap();
-                let id = self.next_vocab_id().unwrap().unwrap();
-                self.get_vocab(id);
-            }
-            if ui.button("Fail").clicked() {
-                self.write_result(self.id, false).unwrap();
-                let id = self.next_vocab_id().unwrap().unwrap();
-                self.get_vocab(id);
-            }
-            if ui.button("Flip").clicked() {
-                self.flip();
-            }
-            egui::ScrollArea::vertical()
-                .auto_shrink(false)
-                .stick_to_bottom(true)
-                .show(ui, |ui| {
-                    ui.label(if self.is_front {
+        egui::Panel::top("top_panel")
+            .resizable(true)
+            .min_size(32.0)
+            .show_inside(ui, |ui| {
+                egui::ScrollArea::vertical()
+                    .auto_shrink(false)
+                    .stick_to_bottom(true)
+                    .show(ui, |ui| {
+                    ui.label(egui::RichText::new(if self.is_front {
                         &self.front
                     } else {
                         &self.back
-                    });
+                    }).size(50.0));
                 });
-        });
+            });
+        egui::Panel::bottom("bottom_panel")
+            .resizable(false)
+            .min_size(0.0)
+            .show_inside(ui, |ui| {
+                if ui.button("Pass").clicked() {
+                    self.write_result(self.id, true).unwrap();
+                    let id = self.next_vocab_id().unwrap().unwrap();
+                    self.get_vocab(id);
+                }
+                if ui.button("Fail").clicked() {
+                    self.write_result(self.id, false).unwrap();
+                    let id = self.next_vocab_id().unwrap().unwrap();
+                    self.get_vocab(id);
+                }
+                if ui.button("Flip").clicked() {
+                    self.flip();
+                }
+            });
     }
 }
 
