@@ -1,5 +1,3 @@
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
-
 use eframe::egui;
 use egui::{FontData, FontDefinitions, FontFamily};
 use rusqlite::{params, Connection, Result};
@@ -14,6 +12,7 @@ pub struct Vocab {
 }
 
 struct LingoApp {
+    id: i64,
     front: String,
     back: String,
     is_front: bool,
@@ -49,6 +48,7 @@ impl Default for LingoApp {
     fn default() -> Self {
         let conn = Connection::open("lingo.db").unwrap();
         Self {
+            id: 1,
             front: String::new(),
             back: String::new(),
             conn,
@@ -61,7 +61,8 @@ impl LingoApp {
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
         load_fonts(&cc.egui_ctx);
         let mut s = Self::default();
-        s.get_vocab();
+        let id = s.next_vocab_id().unwrap().unwrap();
+        s.get_vocab(id);
         s
     }
 
@@ -69,13 +70,13 @@ impl LingoApp {
         self.is_front = !self.is_front;
     }
 
-    fn get_vocab(&mut self) {
+    fn get_vocab(&mut self, id: i64) {
         let mut stmt = self
             .conn
             .prepare("SELECT id, vocab, reading, translation FROM vocab WHERE id = ?1")
             .unwrap();
         let v = stmt
-            .query_row([1], |row| {
+            .query_row([id], |row| {
                 Ok(Vocab {
                     id: row.get(0).unwrap(),
                     vocab: row.get(1).unwrap(),
@@ -84,6 +85,7 @@ impl LingoApp {
                 })
             })
             .unwrap();
+        self.id = v.id;
         self.front = v.vocab;
         self.back = format!("{}\n{}", v.reading, v.translation);
         self.is_front = true;
@@ -100,18 +102,65 @@ impl LingoApp {
         )?;
         Ok(())
     }
+
+    fn next_vocab_id(&self) -> Result<Option<i64>> {
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as i64;
+
+        let mut stmt = self.conn.prepare(
+            r#"
+            WITH stats AS (
+                SELECT
+                    v.id AS vocab_id,
+                    COUNT(r.id) AS total,
+                    SUM(CASE WHEN r.result = 0 THEN 1 ELSE 0 END) AS failures,
+                    MAX(r.datetime) AS last_seen
+                FROM vocab v
+                LEFT JOIN results r ON v.id = r.vocab_id
+                GROUP BY v.id
+            )
+            SELECT vocab_id
+            FROM stats
+            ORDER BY
+                -- prioritize unseen cards
+                (total = 0) DESC,
+
+                -- higher failure ratio first
+                (CAST(failures AS REAL) / NULLIF(total, 0)) DESC,
+
+                -- older cards first
+                ( ? - COALESCE(last_seen, 0) ) DESC,
+
+                -- randomness to break ties
+                RANDOM()
+            LIMIT 1
+            "#,
+        )?;
+
+        let mut rows = stmt.query([now])?;
+
+        if let Some(row) = rows.next()? {
+            Ok(Some(row.get(0)?))
+        } else {
+            Ok(None)
+        }
+    }
 }
 
 impl eframe::App for LingoApp {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show_inside(ui, |ui| {
             if ui.button("Pass").clicked() {
-                self.write_result(1, true).unwrap();
-                self.get_vocab();
+                self.write_result(self.id, true).unwrap();
+                let id = self.next_vocab_id().unwrap().unwrap();
+                self.get_vocab(id);
             }
             if ui.button("Fail").clicked() {
-                self.write_result(1, false).unwrap();
-                self.get_vocab();
+                self.write_result(self.id, false).unwrap();
+                let id = self.next_vocab_id().unwrap().unwrap();
+                self.get_vocab(id);
             }
             if ui.button("Flip").clicked() {
                 self.flip();
@@ -131,7 +180,6 @@ impl eframe::App for LingoApp {
 }
 
 fn main() -> Result<(), eframe::Error> {
-    env_logger::init(); // Log to stderr (if you run with `RUST_LOG=debug`).
     let options = eframe::NativeOptions::default();
     eframe::run_native(
         "lingo",

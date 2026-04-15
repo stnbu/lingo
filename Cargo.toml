@@ -8,8 +8,5 @@ publish = false
 
 [dependencies]
 eframe = "0.34.1"
-env_logger = { version = "0.10", default-features = false, features = [
-    "auto-color",
-    "humantime",
-] }
+rand = "0.10.1"
 rusqlite = { version = "0.39", features = ["bundled"] }
