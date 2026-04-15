@@ -14,7 +14,9 @@ pub struct Vocab {
 
 #[derive(Default)]
 struct Content {
-    text: String,
+    front: String,
+    back: String,
+    is_front: bool,
 }
 
 fn load_fonts(ctx: &egui::Context) {
@@ -56,10 +58,10 @@ impl eframe::App for Content {
         egui::CentralPanel::default().show_inside(ui, |ui| {
             if ui.button("Pass").clicked() {
                 let v = get_vocab(&conn, 1).unwrap();
-                self.text = format!("{}", v.vocab);
+                self.front = format!("{}", v.vocab);
             }
             if ui.button("Fail").clicked() {
-                self.text = "fail".to_owned();
+                self.front = "fail".to_owned();
             }
             if ui.button("Flip").clicked() {
                 println!("flip");
@@ -68,7 +70,7 @@ impl eframe::App for Content {
                 .auto_shrink(false)
                 .stick_to_bottom(true)
                 .show(ui, |ui| {
-                    ui.label(&self.text);
+                    ui.label(&self.front);
                 });
         });
     }
