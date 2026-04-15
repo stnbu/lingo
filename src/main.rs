@@ -151,21 +151,6 @@ impl LingoApp {
 
 impl eframe::App for LingoApp {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
-        egui::Panel::top("top_panel")
-            .resizable(true)
-            .min_size(32.0)
-            .show_inside(ui, |ui| {
-                ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
-                    ui.label(
-                        egui::RichText::new(if self.is_front {
-                            &self.front
-                        } else {
-                            &self.back
-                        })
-                        .size(80.0),
-                    );
-                });
-            });
         egui::Panel::bottom("bottom_panel")
             .resizable(false)
             .min_size(64.0)
@@ -186,6 +171,18 @@ impl eframe::App for LingoApp {
                     }
                 })
             });
+        egui::CentralPanel::default().show_inside(ui, |ui| {
+            ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
+                ui.label(
+                    egui::RichText::new(if self.is_front {
+                        &self.front
+                    } else {
+                        &self.back
+                    })
+                    .size(80.0),
+                );
+            });
+        });
     }
 }
 
