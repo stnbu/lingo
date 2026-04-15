@@ -2,9 +2,9 @@
 
 use eframe::egui;
 use egui::{FontData, FontDefinitions, FontFamily};
-use rusqlite::{Connection, Result, params};
-use std::time::{SystemTime, UNIX_EPOCH};
+use rusqlite::{params, Connection, Result};
 use std::sync::Arc;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct Vocab {
     pub id: i64,
