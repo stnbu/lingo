@@ -58,7 +58,7 @@ impl eframe::App for Content {
         egui::CentralPanel::default().show_inside(ui, |ui| {
             if ui.button("Pass").clicked() {
                 let v = get_vocab(&conn, 1).unwrap();
-                self.front = format!("{}", v.vocab);
+                self.front = v.vocab;
             }
             if ui.button("Fail").clicked() {
                 self.front = "fail".to_owned();
