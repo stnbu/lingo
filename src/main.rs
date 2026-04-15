@@ -61,6 +61,10 @@ impl Content {
         load_fonts(&cc.egui_ctx);
         Self::default()
     }
+
+    fn flip(&mut self) {
+        self.is_front = !self.is_front;
+    }
 }
 
 impl eframe::App for Content {
@@ -77,7 +81,7 @@ impl eframe::App for Content {
                 self.back = format!("{}\n{}", v.reading, v.translation)
             }
             if ui.button("Flip").clicked() {
-                self.is_front = !self.is_front;
+                self.flip();
             }
             egui::ScrollArea::vertical()
                 .auto_shrink(false)
