@@ -12,7 +12,7 @@ pub struct Vocab {
     pub translation: String,
 }
 
-struct Content {
+struct LingoApp {
     front: String,
     back: String,
     is_front: bool,
@@ -44,7 +44,7 @@ fn load_fonts(ctx: &egui::Context) {
     ctx.set_fonts(fonts);
 }
 
-impl Default for Content {
+impl Default for LingoApp {
     fn default() -> Self {
         let conn = Connection::open("lingo.db").unwrap();
         Self {
@@ -56,7 +56,7 @@ impl Default for Content {
     }
 }
 
-impl Content {
+impl LingoApp {
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
         load_fonts(&cc.egui_ctx);
         Self::default()
@@ -86,7 +86,7 @@ impl Content {
     }
 }
 
-impl eframe::App for Content {
+impl eframe::App for LingoApp {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show_inside(ui, |ui| {
             if ui.button("Pass").clicked() {
@@ -118,6 +118,6 @@ fn main() -> Result<(), eframe::Error> {
     eframe::run_native(
         "lingo",
         options,
-        Box::new(|cc| Ok(Box::new(Content::new(cc)))),
+        Box::new(|cc| Ok(Box::new(LingoApp::new(cc)))),
     )
 }
