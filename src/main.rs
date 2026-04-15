@@ -155,23 +155,18 @@ impl eframe::App for LingoApp {
             .resizable(true)
             .min_size(32.0)
             .show_inside(ui, |ui| {
-                egui::ScrollArea::vertical()
-                    .auto_shrink(false)
-                    .stick_to_bottom(true)
-                    .show(ui, |ui| {
-                        ui.label(
-                            egui::RichText::new(if self.is_front {
-                                &self.front
-                            } else {
-                                &self.back
-                            })
-                            .size(50.0),
-                        );
-                    });
+                ui.label(
+                    egui::RichText::new(if self.is_front {
+                        &self.front
+                    } else {
+                        &self.back
+                    })
+                    .size(50.0),
+                );
             });
         egui::Panel::bottom("bottom_panel")
             .resizable(false)
-            .min_size(0.0)
+            .min_size(64.0)
             .show_inside(ui, |ui| {
                 ui.horizontal(|ui| {
                     if ui.button("Pass").clicked() {
