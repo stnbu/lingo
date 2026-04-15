@@ -2,7 +2,8 @@
 
 use eframe::egui;
 use egui::{FontData, FontDefinitions, FontFamily};
-use rusqlite::{Connection, Result};
+use rusqlite::{Connection, Result, params};
+use std::time::{SystemTime, UNIX_EPOCH};
 use std::sync::Arc;
 
 pub struct Vocab {
@@ -87,15 +88,29 @@ impl LingoApp {
         self.back = format!("{}\n{}", v.reading, v.translation);
         self.is_front = true;
     }
+
+    fn write_result(&self, vocab_id: i64, result: bool) -> Result<()> {
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as i64;
+        self.conn.execute(
+            "INSERT INTO results (vocab_id, result, datetime) VALUES (?1, ?2, ?3)",
+            params![vocab_id, result, now],
+        )?;
+        Ok(())
+    }
 }
 
 impl eframe::App for LingoApp {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show_inside(ui, |ui| {
             if ui.button("Pass").clicked() {
+                self.write_result(1, true).unwrap();
                 self.get_vocab();
             }
             if ui.button("Fail").clicked() {
+                self.write_result(1, false).unwrap();
                 self.get_vocab();
             }
             if ui.button("Flip").clicked() {
