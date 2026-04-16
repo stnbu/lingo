@@ -156,16 +156,18 @@ impl eframe::App for LingoApp {
             .min_size(64.0)
             .show_inside(ui, |ui| {
                 ui.horizontal(|ui| {
-                    if ui.button("Pass").clicked() {
-                        self.write_result(self.id, true).unwrap();
-                        let id = self.next_vocab_id().unwrap().unwrap();
-                        self.get_vocab(id);
-                    }
-                    if ui.button("Fail").clicked() {
-                        self.write_result(self.id, false).unwrap();
-                        let id = self.next_vocab_id().unwrap().unwrap();
-                        self.get_vocab(id);
-                    }
+                    match match (ui.button("Pass").clicked(), ui.button("Fail").clicked()) {
+                        (true, false) => Some(true),
+                        (false, true) => Some(false),
+                        _ => None,
+                    } {
+                        Some(result) => {
+                            self.write_result(self.id, result).unwrap();
+                            let id = self.next_vocab_id().unwrap().unwrap();
+                            self.get_vocab(id);
+                        }
+                        None => {}
+                    };
                     if ui.button("Flip").clicked() {
                         self.flip();
                     }
