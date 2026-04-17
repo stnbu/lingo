@@ -19,6 +19,7 @@ struct LingoApp {
     is_front: bool,
     conn: Connection,
     mode: i64,
+    random: bool,
 }
 
 fn load_fonts(ctx: &egui::Context) {
@@ -57,6 +58,7 @@ impl Default for LingoApp {
             conn,
             is_front: true,
             mode: 1,
+            random: false,
         }
     }
 }
@@ -106,6 +108,27 @@ impl LingoApp {
             params![&self.id, result, now, &self.mode],
         )?;
         Ok(())
+    }
+
+    fn random_vocab_id(&self) -> Result<Option<i64>> {
+        let mut stmt = self.conn.prepare(
+            r#"
+              SELECT id
+              FROM vocab
+              WHERE id IN (
+                  SELECT id
+                  FROM vocab
+                  ORDER BY RANDOM()
+                  LIMIT 1
+              );
+              "#,
+        )?;
+        let mut rows = stmt.query([])?;
+        if let Some(row) = rows.next()? {
+            Ok(Some(row.get(0)?))
+        } else {
+            Ok(None)
+        }
     }
 
     fn next_vocab_id(&self) -> Result<Option<i64>> {
@@ -169,12 +192,16 @@ impl eframe::App for LingoApp {
                     } {
                         Some(result) => {
                             self.write_result(result).unwrap();
-                            let id = self.next_vocab_id().unwrap().unwrap();
+                            let id = if self.random {
+                                self.random_vocab_id().unwrap().unwrap()
+                            } else {
+                                self.next_vocab_id().unwrap().unwrap()
+                            };
                             self.get_vocab(id);
                         }
                         None => {}
                     };
-                    ui.label("Mode");
+                    ui.label("Mode:");
                     ui.horizontal(|ui| {
                         ui.radio_value(&mut self.mode, 1, "No Reading");
                         ui.radio_value(&mut self.mode, 2, "Reading");
@@ -182,6 +209,7 @@ impl eframe::App for LingoApp {
                     if ui.button("Flip").clicked() {
                         self.flip();
                     }
+                    ui.checkbox(&mut self.random, "Random");
                 })
             });
         egui::CentralPanel::default().show_inside(ui, |ui| {
