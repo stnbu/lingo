@@ -211,9 +211,11 @@ impl eframe::App for LingoApp {
                         ui.checkbox(&mut self.random, "Random");
                     });
                     ui.horizontal(|ui| {
-                        if ui.button("Flip").clicked() {
-                            self.flip();
-                        }
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            if ui.button("Flip").clicked() {
+                                self.flip();
+                            }
+                        });
                     });
                 })
             });
