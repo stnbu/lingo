@@ -220,19 +220,24 @@ impl eframe::App for LingoApp {
                 })
             });
         egui::CentralPanel::default().show_inside(ui, |ui| {
-            ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
-                let front = match &self.mode {
-                    1 => self.vocab.clone(),
-                    2 => format!("{}\n{}", &self.vocab, &self.reading),
-                    _ => "ERR".to_string(),
-                };
-                let back = match &self.mode {
-                    1 => format!("{}\n{}", &self.reading, &self.translation),
-                    2 => self.translation.clone(),
-                    _ => "ERR".to_string(),
-                };
-                ui.label(egui::RichText::new(if self.is_front { front } else { back }).size(80.0));
-            });
+            ui.with_layout(
+                egui::Layout::top_down(egui::Align::Center).with_main_justify(true),
+                |ui| {
+                    let front = match &self.mode {
+                        1 => self.vocab.clone(),
+                        2 => format!("{}\n{}", &self.vocab, &self.reading),
+                        _ => "ERR".to_string(),
+                    };
+                    let back = match &self.mode {
+                        1 => format!("{}\n{}", &self.reading, &self.translation),
+                        2 => self.translation.clone(),
+                        _ => "ERR".to_string(),
+                    };
+                    ui.label(
+                        egui::RichText::new(if self.is_front { front } else { back }).size(80.0),
+                    );
+                },
+            );
         });
     }
 }
