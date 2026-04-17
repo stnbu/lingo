@@ -182,34 +182,39 @@ impl eframe::App for LingoApp {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         egui::Panel::bottom("bottom_panel")
             .resizable(false)
-            .min_size(64.0)
             .show_inside(ui, |ui| {
-                ui.horizontal(|ui| {
-                    match match (ui.button("Pass").clicked(), ui.button("Fail").clicked()) {
-                        (true, false) => Some(true),
-                        (false, true) => Some(false),
-                        _ => None,
-                    } {
-                        Some(result) => {
-                            self.write_result(result).unwrap();
-                            let id = if self.random {
-                                self.random_vocab_id().unwrap().unwrap()
-                            } else {
-                                self.next_vocab_id().unwrap().unwrap()
-                            };
-                            self.get_vocab(id);
-                        }
-                        None => {}
-                    };
-                    ui.label("Mode:");
+                ui.vertical(|ui| {
                     ui.horizontal(|ui| {
+                        match match (ui.button("Pass").clicked(), ui.button("Fail").clicked()) {
+                            (true, false) => Some(true),
+                            (false, true) => Some(false),
+                            _ => None,
+                        } {
+                            Some(result) => {
+                                self.write_result(result).unwrap();
+                                let id = if self.random {
+                                    self.random_vocab_id().unwrap().unwrap()
+                                } else {
+                                    self.next_vocab_id().unwrap().unwrap()
+                                };
+                                self.get_vocab(id);
+                            }
+                            None => {}
+                        };
+                    });
+                    ui.horizontal(|ui| {
+                        ui.label("Mode:");
                         ui.radio_value(&mut self.mode, 1, "No Reading");
                         ui.radio_value(&mut self.mode, 2, "Reading");
                     });
-                    if ui.button("Flip").clicked() {
-                        self.flip();
-                    }
-                    ui.checkbox(&mut self.random, "Random");
+                    ui.horizontal(|ui| {
+                        ui.checkbox(&mut self.random, "Random");
+                    });
+                    ui.horizontal(|ui| {
+                        if ui.button("Flip").clicked() {
+                            self.flip();
+                        }
+                    });
                 })
             });
         egui::CentralPanel::default().show_inside(ui, |ui| {
