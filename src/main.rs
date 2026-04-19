@@ -20,6 +20,7 @@ struct LingoApp {
     conn: Connection,
     mode: i64,
     random: bool,
+    focus: bool,
 }
 
 fn load_fonts(ctx: &egui::Context) {
@@ -59,6 +60,7 @@ impl Default for LingoApp {
             is_front: true,
             mode: 1,
             random: false,
+            focus: false,
         }
     }
 }
@@ -111,18 +113,20 @@ impl LingoApp {
     }
 
     fn random_vocab_id(&self) -> Result<Option<i64>> {
-        let mut stmt = self.conn.prepare(
+        let mut stmt = self.conn.prepare(&format!(
             r#"
               SELECT id
               FROM vocab
               WHERE id IN (
                   SELECT id
                   FROM vocab
+                  {}
                   ORDER BY RANDOM()
                   LIMIT 1
               );
               "#,
-        )?;
+            if self.focus { "WHERE focus = 1" } else { "" }
+        ))?;
         let mut rows = stmt.query([])?;
         if let Some(row) = rows.next()? {
             Ok(Some(row.get(0)?))
@@ -137,7 +141,7 @@ impl LingoApp {
             .unwrap()
             .as_secs() as i64;
 
-        let mut stmt = self.conn.prepare(
+        let mut stmt = self.conn.prepare(&format!(
             r#"
             WITH stats AS (
                 SELECT
@@ -148,7 +152,7 @@ impl LingoApp {
                 FROM vocab v
                 LEFT JOIN results r ON v.id = r.vocab_id
                     AND r.mode = ?1
-                WHERE v.focus = 0
+                {}
                 GROUP BY v.id
             )
             SELECT vocab_id
@@ -167,7 +171,8 @@ impl LingoApp {
                 RANDOM()
             LIMIT 1
             "#,
-        )?;
+            if self.focus { "WHERE v.focus = 1" } else { "" }
+        ))?;
 
         let mut rows = stmt.query([&self.mode, &now])?;
 
@@ -210,6 +215,9 @@ impl eframe::App for LingoApp {
                     });
                     ui.horizontal(|ui| {
                         ui.checkbox(&mut self.random, "Random");
+                    });
+                    ui.horizontal(|ui| {
+                        ui.checkbox(&mut self.focus, "Focus only");
                     });
                     ui.horizontal(|ui| {
                         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
