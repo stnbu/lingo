@@ -148,6 +148,7 @@ impl LingoApp {
                 FROM vocab v
                 LEFT JOIN results r ON v.id = r.vocab_id
                     AND r.mode = ?1
+                WHERE v.focus = 0
                 GROUP BY v.id
             )
             SELECT vocab_id
