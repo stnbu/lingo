@@ -78,6 +78,16 @@ impl LingoApp {
         self.is_front = !self.is_front;
     }
 
+    fn toggle_focus(&mut self) {
+        self.conn
+            .execute(
+                "UPDATE vocab SET focus = ?1 WHERE id = ?2;",
+                params![if self.focus { 0 } else { 1 }, &self.id],
+            )
+            .unwrap();
+        self.focus = !self.focus;
+    }
+
     fn get_vocab(&mut self, id: i64) {
         let mut stmt = self
             .conn
@@ -207,6 +217,18 @@ impl eframe::App for LingoApp {
                             }
                             None => {}
                         };
+                    });
+                    ui.horizontal(|ui| {
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            let label = if self.focus {
+                                "Remove Focus"
+                            } else {
+                                "Add Focus"
+                            };
+                            if ui.button(label).clicked() {
+                                self.toggle_focus();
+                            }
+                        });
                     });
                     ui.horizontal(|ui| {
                         ui.label("Mode:");
