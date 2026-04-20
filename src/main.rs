@@ -140,7 +140,11 @@ impl LingoApp {
                   LIMIT 1
               );
               "#,
-            if self.focus_mode { "WHERE focus = 1" } else { "" }
+            if self.focus_mode {
+                "WHERE focus = 1"
+            } else {
+                ""
+            }
         ))?;
         let mut rows = stmt.query([])?;
         if let Some(row) = rows.next()? {
@@ -186,7 +190,11 @@ impl LingoApp {
                 RANDOM()
             LIMIT 1
             "#,
-            if self.focus_mode { "WHERE v.focus = 1" } else { "" }
+            if self.focus_mode {
+                "WHERE v.focus = 1"
+            } else {
+                ""
+            }
         ))?;
 
         let mut rows = stmt.query([&self.mode, &now])?;
