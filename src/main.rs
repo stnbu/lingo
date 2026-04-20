@@ -9,6 +9,7 @@ pub struct Vocab {
     pub vocab: String,
     pub reading: String,
     pub translation: String,
+    pub focus: bool,
 }
 
 struct LingoApp {
@@ -20,6 +21,7 @@ struct LingoApp {
     conn: Connection,
     mode: i64,
     random: bool,
+    focus_mode: bool,
     focus: bool,
 }
 
@@ -60,6 +62,7 @@ impl Default for LingoApp {
             is_front: true,
             mode: 1,
             random: false,
+            focus_mode: false,
             focus: false,
         }
     }
@@ -91,7 +94,7 @@ impl LingoApp {
     fn get_vocab(&mut self, id: i64) {
         let mut stmt = self
             .conn
-            .prepare("SELECT id, vocab, reading, translation FROM vocab WHERE id = ?1")
+            .prepare("SELECT id, vocab, reading, translation, focus FROM vocab WHERE id = ?1")
             .unwrap();
         let v = stmt
             .query_row([id], |row| {
@@ -100,6 +103,7 @@ impl LingoApp {
                     vocab: row.get(1).unwrap(),
                     reading: row.get(2).unwrap(),
                     translation: row.get(3).unwrap(),
+                    focus: row.get(4).unwrap(),
                 })
             })
             .unwrap();
@@ -107,6 +111,7 @@ impl LingoApp {
         self.vocab = v.vocab;
         self.reading = v.reading;
         self.translation = v.translation;
+        self.focus = v.focus;
         self.is_front = true;
     }
 
@@ -135,7 +140,7 @@ impl LingoApp {
                   LIMIT 1
               );
               "#,
-            if self.focus { "WHERE focus = 1" } else { "" }
+            if self.focus_mode { "WHERE focus = 1" } else { "" }
         ))?;
         let mut rows = stmt.query([])?;
         if let Some(row) = rows.next()? {
@@ -181,7 +186,7 @@ impl LingoApp {
                 RANDOM()
             LIMIT 1
             "#,
-            if self.focus { "WHERE v.focus = 1" } else { "" }
+            if self.focus_mode { "WHERE v.focus = 1" } else { "" }
         ))?;
 
         let mut rows = stmt.query([&self.mode, &now])?;
@@ -239,7 +244,7 @@ impl eframe::App for LingoApp {
                         ui.checkbox(&mut self.random, "Random");
                     });
                     ui.horizontal(|ui| {
-                        ui.checkbox(&mut self.focus, "Focus only");
+                        ui.checkbox(&mut self.focus_mode, "Focus only");
                     });
                     ui.horizontal(|ui| {
                         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
