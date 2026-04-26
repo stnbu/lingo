@@ -3,6 +3,7 @@ use egui::{FontData, FontDefinitions, FontFamily};
 use rusqlite::{params, Connection, Result};
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
+use std::env;
 
 pub struct Vocab {
     pub id: i64,
@@ -50,10 +51,11 @@ fn load_fonts(ctx: &egui::Context) {
     ctx.set_fonts(fonts);
 }
 
-impl Default for LingoApp {
-    fn default() -> Self {
-        let conn = Connection::open("lingo.db").unwrap();
-        Self {
+impl LingoApp {
+    fn new(cc: &eframe::CreationContext<'_>, db: String) -> Self {
+        load_fonts(&cc.egui_ctx);
+        let conn = Connection::open(db).unwrap();
+        let mut s = Self {
             id: 1,
             vocab: String::new(),
             reading: String::new(),
@@ -64,14 +66,7 @@ impl Default for LingoApp {
             random: false,
             focus_mode: false,
             focus: false,
-        }
-    }
-}
-
-impl LingoApp {
-    fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        load_fonts(&cc.egui_ctx);
-        let mut s = Self::default();
+        };
         let id = s.next_vocab_id().unwrap().unwrap();
         s.get_vocab(id);
         s
@@ -287,10 +282,12 @@ impl eframe::App for LingoApp {
 }
 
 fn main() -> Result<(), eframe::Error> {
+    let db = env::args().nth(1).unwrap();
     let options = eframe::NativeOptions::default();
     eframe::run_native(
         "lingo",
         options,
-        Box::new(|cc| Ok(Box::new(LingoApp::new(cc)))),
+        Box::new(|cc| Ok(Box::new(LingoApp::new(cc, db)))),
     )
+
 }
