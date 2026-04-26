@@ -1,9 +1,9 @@
 use eframe::egui;
 use egui::{FontData, FontDefinitions, FontFamily};
 use rusqlite::{params, Connection, Result};
+use std::env;
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
-use std::env;
 
 pub struct Vocab {
     pub id: i64,
@@ -289,5 +289,4 @@ fn main() -> Result<(), eframe::Error> {
         options,
         Box::new(|cc| Ok(Box::new(LingoApp::new(cc, db)))),
     )
-
 }
