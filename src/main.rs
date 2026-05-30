@@ -242,6 +242,7 @@ impl eframe::App for LingoApp {
                         ui.label("Mode:");
                         ui.radio_value(&mut self.mode, 1, "No Reading");
                         ui.radio_value(&mut self.mode, 2, "Reading");
+                        ui.radio_value(&mut self.mode, 3, "No Kanji");
                     });
                     ui.horizontal(|ui| {
                         ui.checkbox(&mut self.random, "Random");
@@ -265,11 +266,14 @@ impl eframe::App for LingoApp {
                     let front = match &self.mode {
                         1 => self.vocab.clone(),
                         2 => format!("{}\n{}", &self.vocab, &self.reading),
+                        3 => self.reading.clone(),
                         _ => "ERR".to_string(),
                     };
                     let back = match &self.mode {
                         1 => format!("{}\n{}", &self.reading, &self.translation),
                         2 => self.translation.clone(),
+                        // FIXME: homonyms
+                        3 => format!("{}\n{}", &self.vocab, &self.translation),
                         _ => "ERR".to_string(),
                     };
                     ui.label(
