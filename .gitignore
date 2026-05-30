@@ -1,2 +1,4 @@
 target/
-lingo.db*
+*.db*
+kanji/
+transcripts/
